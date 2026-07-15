@@ -9,6 +9,6 @@ void main() {
 
     while (1) {
         char character = __getc();
-        _putc(character + 30);
+        __putc(character + 30);
     }
 }
