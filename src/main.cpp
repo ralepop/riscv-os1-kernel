@@ -11,8 +11,8 @@ MemoryAllocator mem;
 void run_allocator_test() {
     __putc('T'); __putc('E'); __putc('S'); __putc('T'); __putc('\n'); 
 
-    void *p1 = mem.mem_alloc(64);
-    void *p2 = mem.mem_alloc(104);
+    void *p1 = mem.mem_alloc(64); // ima deljenje fragmenata
+    void *p2 = mem.mem_alloc(104); // nema deljenja fragmenata: 104 + 24 (sizeof(Fragment)) = 128
     void *p3 = mem.mem_alloc(64);
 
     if (p1 == nullptr || p2 == nullptr || p3 == nullptr) {

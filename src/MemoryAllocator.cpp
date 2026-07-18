@@ -112,6 +112,7 @@ int MemoryAllocator::mem_free(void *ptr) {
                 break;
             }
         }
+
         curr = curr->next;
     }
 
@@ -138,12 +139,16 @@ int MemoryAllocator::mem_free(void *ptr) {
     // Mergujemo sledeci (desno), ako je moguce
     if (hptr->next != nullptr) {
         char *next_adr = (char*)(hptr - 1) + hptr->number_of_blocks * MEM_BLOCK_SIZE;
+
         if ((Fragment*)next_adr == hptr->next - 1) {
+
             // "Povecavamo" fragment
             hptr->number_of_blocks += hptr->next->number_of_blocks;
+
             if (hptr->next->next != nullptr) {
                 hptr->next->next->prev = hptr;
             }
+
             hptr->next = hptr->next->next;
         }
     }
@@ -157,12 +162,17 @@ int MemoryAllocator::mem_free(void *ptr) {
                              /   \     
                      prev_adr     hptr-1
         */
+
         char *prev_adr = (char*)(hptr->prev - 1) + hptr->prev->number_of_blocks * MEM_BLOCK_SIZE;
+
         if ((Fragment*)prev_adr == hptr - 1) {
+
             hptr->prev->number_of_blocks += hptr->number_of_blocks;
+
             if (hptr->next != nullptr) {
                 hptr->next->prev = hptr->prev;
             }
+            
             hptr->prev->next = hptr->next;
         }
     }
