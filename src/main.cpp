@@ -12,7 +12,7 @@ void run_allocator_test() {
     __putc('T'); __putc('E'); __putc('S'); __putc('T'); __putc('\n'); 
 
     void *p1 = mem.mem_alloc(64);
-    void *p2 = mem.mem_alloc(128);
+    void *p2 = mem.mem_alloc(104);
     void *p3 = mem.mem_alloc(64);
 
     if (p1 == nullptr || p2 == nullptr || p3 == nullptr) {

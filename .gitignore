@@ -1,2 +1,5 @@
 .idea/
-.DS_Storem
+.DS_Store
+kernel
+kernel.asm
+build/
