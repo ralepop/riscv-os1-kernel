@@ -21,7 +21,7 @@ void run_allocator_test() {
     }
 
     mem.mem_free(p2);
-    mem.mem_free(p1);j
+    mem.mem_free(p1);
     mem.mem_free(p3);
 
     __putc('O'); __putc('K'); __putc('\n'); 
