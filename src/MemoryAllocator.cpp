@@ -109,7 +109,7 @@ int MemoryAllocator::mem_free(void *ptr) {
     hptr->prev = prev;
 
     if (prev != nullptr) {
-        prev->next = nullptr;
+        prev->next = hptr;
     } else {
         head = hptr;
     }
@@ -122,18 +122,25 @@ int MemoryAllocator::mem_free(void *ptr) {
 
     // Mergujemo sledeci (desno), ako je moguce
     if (hptr->next != nullptr) {
-        char *next_adr = (char*)(hptr - 1) + hptr->number_of_blocks * MEM_BLOCK_SIZE;
 
-        if ((Fragment*)next_adr == hptr->next - 1) {
+        /*
+            [ HPTR FRAGMENT ]  [ NEXT FRAGMENT ]
+            ^                  ^
+            |                  |
+            hptr            hptr->next
+                            next_end
+        */
 
-            // "Povecavamo" fragment
+        char *next_end = (char*)hptr + hptr->number_of_blocks * MEM_BLOCK_SIZE;
+
+        if ((Fragment*)next_end == hptr->next) {
+
             hptr->number_of_blocks += hptr->next->number_of_blocks;
-
-            if (hptr->next->next != nullptr) {
-                hptr->next->next->prev = hptr;
-            }
-
             hptr->next = hptr->next->next;
+
+            if (hptr->next != nullptr) {
+                hptr->next->prev = hptr;
+            }
         }
     }
 
@@ -141,23 +148,25 @@ int MemoryAllocator::mem_free(void *ptr) {
     if (hptr->prev != nullptr) {
 
         /* 
-            [  PREV FRAGMENT  ] [  HPTR  ] [  xxx  ]
-                              ^ ^        
-                             /   \     
-                     prev_adr     hptr-1
+            [ PREV FRAGMENT ]  [ HPTR FRAGMENT ]
+                               ^
+                               |
+                            prev_end (kraj)
+                              hptr
         */
 
-        char *prev_adr = (char*)(hptr->prev - 1) + hptr->prev->number_of_blocks * MEM_BLOCK_SIZE;
+        char *prev_end = (char*)hptr->prev + (hptr->prev->number_of_blocks * MEM_BLOCK_SIZE);
 
-        if ((Fragment*)prev_adr == hptr - 1) {
+        if ((Fragment*)prev_end == hptr) {
 
             hptr->prev->number_of_blocks += hptr->number_of_blocks;
+            hptr->prev->next = hptr->next;
 
             if (hptr->next != nullptr) {
                 hptr->next->prev = hptr->prev;
             }
 
-            hptr->prev->next = hptr->next;
+            hptr = hptr->prev;
         }
     }
 
