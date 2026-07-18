@@ -3,3 +3,6 @@
 kernel
 kernel.asm
 build/
+.vscode/
+null.d
+.gdbinit
