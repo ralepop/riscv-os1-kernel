@@ -96,42 +96,26 @@ int MemoryAllocator::mem_free(void *ptr) {
     //      .
 
     Fragment *curr = head;
-    while (curr != nullptr) {
-        if (hptr < curr) {
-            if (curr == head) {
-                head = hptr;
-                head->prev = nullptr;
-                head->next = curr;
-                curr->prev = head;
-                break;
-            } else {
-                hptr->next = curr;
-                hptr->prev = curr->prev;
-                curr->prev = hptr;
-                curr->prev->next = hptr;
-                break;
-            }
-        }
+    
+    // ukoliko je curr == nullptr, curr->prev baca seg. fault, te koristimo pomocni pokazivac
+    Fragment *prev = nullptr;
 
+    while (curr != nullptr && hptr > curr) {
+        prev = curr;
         curr = curr->next;
     }
 
-    // najvisi
-    if (curr == nullptr) {
-        if (head == nullptr) {
-            head = curr;
-            head->next = nullptr;
-            head->prev = nullptr;
-            return 0;
-        } else {
-            curr = head;
-            while (curr->next != nullptr) {
-                curr = curr->next;
-            }
-            curr->next = hptr;
-            hptr->prev = curr;
-            hptr->next = nullptr;
-        }
+    hptr->next = curr;
+    hptr->prev = prev;
+
+    if (prev != nullptr) {
+        prev->next = nullptr;
+    } else {
+        head = hptr;
+    }
+
+    if (curr != nullptr) {
+        curr->prev = hptr;
     }
 
     /* coalescing */ 
@@ -172,7 +156,7 @@ int MemoryAllocator::mem_free(void *ptr) {
             if (hptr->next != nullptr) {
                 hptr->next->prev = hptr->prev;
             }
-            
+
             hptr->prev->next = hptr->next;
         }
     }
