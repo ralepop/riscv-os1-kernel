@@ -1,10 +1,10 @@
-.globl interrupt_routine;
-.globl registers;
-.globl kernel_stack;
+.globl interrupt_routine
+.globl register_state
+.globl kernel_stack
 
 interrupt_routine:
     csrw sscratch, ra;
-    la ra, registers;
+    la ra, register_state;
     sd sp, 8(ra);
     sd s0, 16(ra);
     sd s1, 24(ra);

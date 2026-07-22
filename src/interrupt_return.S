@@ -1,12 +1,12 @@
-.globl interrupt_return;
-.globl interrupt_routine;
-.globl registers;
-.globl kernel_stack;
+.globl interrupt_return
+.globl interrupt_routine
+.globl register_state
+.globl kernel_stack
 
 interrupt_return:
     la ra, kernel_stack;
     sd sp, (ra);
-    la ra, registers; // prebacujemo ra na pocetak nase strukture
+    la ra, register_state; // prebacujemo ra na pocetak nase strukture
     
     ld a0, 248(ra); // uzimamo sepc i stavljamo u a0
     csrw sepc, a0; // u sepc upisujemo a0 (zapravo sepc)
