@@ -1,5 +1,6 @@
 #include "../h/interrupt_handler.h"
 #include "../h/memory_allocator.h"
+#include "../h/syscalls.h"
 #include "../lib/hw.h"
 
 extern MemoryAllocator mem;
@@ -15,5 +16,10 @@ extern "C" void interrupt_handler() {
     uint64 scause;
     __asm__ volatile ("csrr %0, scause" : "=r" (scause));
 
+    if (scause == ILLEGAL_INSTRUCTION || scause == LOAD_ACCESS_FAULT || scause == STORE_AMO_ACCESS_FAULT) {
+        EXIT
+    }
+
+    
 
 }

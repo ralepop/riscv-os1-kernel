@@ -3,6 +3,9 @@
 
 #include "../lib/hw.h"
 
+// Zaustavljanje emulatora RISC-V procesora iz programskog koda
+#define EXIT *(uint32*)0x100000 = 0x5555;
+
 struct registers {
     uint64 ra;
     uint64 sp;
