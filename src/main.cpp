@@ -1,4 +1,4 @@
-#include "../h/MemoryAllocator.h"
+#include "../h/memory_allocator.h"
 #include "../lib/console.h"
 
 extern "C" void interrupt() {
