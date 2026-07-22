@@ -23,10 +23,8 @@ extern "C" void interrupt_handler() {
     register_state.pc += 4;
 }
 
-extern "C" uint64 kernel_stack;
-
-
-uint64 kernel_stack;
+alignas(16) static char kstack_space[DEFAULT_STACK_SIZE];
+extern "C" uint64 kernel_stack = (uint64)(kstack_space + DEFAULT_STACK_SIZE);
 
 void main() {
 
