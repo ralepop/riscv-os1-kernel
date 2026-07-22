@@ -38,8 +38,8 @@ interrupt_routine:
     mv a0, ra; // a0 pokazuje na pocetak nase strukture
     csrrw ra, sscratch, ra; // sada je ra = ra (original), sscratch = ra (struktura, nije bitno)
     sd ra, (a0); // upisujemo ra (original) na pocetak nase strukture (na sta pokazuje a0)
-    csrrw ra, sepc, ra;
-    sd ra, 248(a0); // upisujemo sepc na a0 + 248
+    csrr t0, sepc;
+    sd to, 248(a0); // upisujemo sepc na a0 + 248
     la ra, kernel_stack;
     ld sp, (ra);
     call interrupt_handler;
