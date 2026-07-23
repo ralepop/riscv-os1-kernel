@@ -20,8 +20,7 @@ static int first_element = 0;
 
 enum Flags : uint8 {
     PC_INCREMENT   = 1 << 0, // 0b0001
-    SAVE_CONTEXT   = 1 << 1, // 0b0010
-    CONTEXT_SWITCH = 1 << 2  // 0b0100
+    CONTEXT_SWITCH = 1 << 1, // 0b0010
 };
 
 
@@ -61,7 +60,7 @@ extern "C" void interrupt_handler() {
                 break;
             case NUM_THREAD_DISPATCH:
                 // TODO thread_dispatch
-                action_flags |= PC_INCREMENT | SAVE_CONTEXT | CONTEXT_SWITCH;
+                action_flags |= PC_INCREMENT | CONTEXT_SWITCH;
                 break;
             case NUM_SEM_OPEN:
                 // TODO sem_open
@@ -73,14 +72,14 @@ extern "C" void interrupt_handler() {
                 break;
             case NUM_SEM_WAIT:
                 // TODO sem_wait
-                action_flags |= PC_INCREMENT | SAVE_CONTEXT | CONTEXT_SWITCH;
+                action_flags |= PC_INCREMENT | CONTEXT_SWITCH;
                 break;
             case NUM_SEM_SIGNAL:
                 // TODO sem_signal
                 action_flags |= PC_INCREMENT;
                 break;
             case NUM_TIME_SLEEP:
-                action_flags |= PC_INCREMENT | SAVE_CONTEXT | CONTEXT_SWITCH;
+                action_flags |= PC_INCREMENT | CONTEXT_SWITCH;
                 break;
             case NUM_GETC:
                 register_state.a0 = getc_buffer[first_element];
@@ -169,8 +168,6 @@ extern "C" void interrupt_handler() {
 
     if (action_flags & PC_INCREMENT) {
         register_state.pc += 4;
-    }
-    if (action_flags & SAVE_CONTEXT) {
         // TODO scheduler.active->context = register_state;
     }
     if (action_flags & CONTEXT_SWITCH) {
@@ -181,5 +178,7 @@ extern "C" void interrupt_handler() {
     if (scause == SUPERVISOR_SOFTWARE_INTERRUPT) {
 
     }
+
+    __asm__ volatile("csrw sip, zero");
 
 }
