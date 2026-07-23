@@ -90,7 +90,7 @@ extern "C" void interrupt_handler() {
 
                 if (buffer_size != 0) {
                     // dozvoljavamo spoljasnje hardverske prekide (i softverske prekide)
-                    __asm__ volatile("csrw sie, %0" :: "r"(0b1000000010));
+                    __asm__ volatile("csrw sie, %0" :: "r"((uint64)0b1000000010));
                 }
                 
                 break;
@@ -154,7 +154,7 @@ extern "C" void interrupt_handler() {
 
         // https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#11-1-1-3-supervisor-interrupt-sip-and-sie-registers
         // Gasimo spoljasnje hardverske prekide
-        __asm__ volatile("csrw sie, %0" :: "r"(0b10));
+        __asm__ volatile("csrw sie, %0" :: "r"((uint64)0b10));
 
     }
 
