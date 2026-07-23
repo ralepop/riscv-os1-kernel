@@ -112,7 +112,16 @@ extern "C" void interrupt_handler() {
     
     // ecall iz sistemskog rezima
     if (scause == ENVIRONMENT_CALL_FROM_S_MODE) {
-        
+        switch (syscall_code) {
+            case NUM_MEM_ALLOC:
+                register_state.a0 = (uint64)mem.mem_alloc(register_state.a1);
+                action_flags |= PC_INCREMENT;
+                break;
+            case NUM_MEM_FREE:
+                register_state.a0 = mem.mem_free((void*)register_state.a1);
+                action_flags |= PC_INCREMENT;
+                break;
+        }
     }
     
     // spoljasnji hardverski prekid
