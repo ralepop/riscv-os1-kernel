@@ -12,28 +12,102 @@ extern "C" uint64 kernel_stack;
 uint64 kernel_stack;
 
 // konzola
-char putc_buffer[64];
 char getc_buffer[64];
+char putc_buffer[64];
 int buffer_size = 0;
-static int free_element = 0;
+static int first_free_element = 0;
+static int first_element = 0;
+
+enum Flags : uint8 {
+    PC_INCREMENT   = 1 << 0, // 0b0001
+    SAVE_CONTEXT   = 1 << 1, // 0b0010
+    CONTEXT_SWITCH = 1 << 2  // 0b0100
+};
+
 
 
 extern "C" void interrupt_handler() {
-
+    
     uint64 scause;
     __asm__ volatile ("csrr %0, scause" : "=r" (scause));
-
+    
     if (scause == ILLEGAL_INSTRUCTION || scause == LOAD_ACCESS_FAULT || scause == STORE_AMO_ACCESS_FAULT) {
         EXIT
     }
-
+    
     // a0: kod sistemskog poziva, jednak broju iz prve kolone tabele date za C API
-
     uint64 syscall_code = register_state.a0;
+    
+    uint8 action_flags = 0;
 
     // ecall iz korisnickog rezima
     if (scause == ENVIRONMENT_CALL_FROM_U_MODE) {
+        switch (syscall_code) {
+            case NUM_MEM_ALLOC:
+                register_state.a0 = (uint64)mem.mem_alloc(register_state.a1);
+                action_flags |= PC_INCREMENT;
+                break;
+            case NUM_MEM_FREE:
+                register_state.a0 = mem.mem_free((void*)register_state.a1);
+                action_flags |= PC_INCREMENT;
+                break;
+            case NUM_THREAD_CREATE:
+                // TODO thread_create
+                action_flags |= PC_INCREMENT;
+                break;
+            case NUM_THREAD_EXIT:
+                // TODO thread_exit
+                action_flags |= CONTEXT_SWITCH;
+                break;
+            case NUM_THREAD_DISPATCH:
+                // TODO thread_dispatch
+                action_flags |= PC_INCREMENT | SAVE_CONTEXT | CONTEXT_SWITCH;
+                break;
+            case NUM_SEM_OPEN:
+                // TODO sem_open
+                action_flags |= PC_INCREMENT;
+                break;
+            case NUM_SEM_CLOSE:
+                // TODO sem_close
+                action_flags |= PC_INCREMENT;
+                break;
+            case NUM_SEM_WAIT:
+                // TODO sem_wait
+                action_flags |= PC_INCREMENT | SAVE_CONTEXT | CONTEXT_SWITCH;
+                break;
+            case NUM_SEM_SIGNAL:
+                // TODO sem_signal
+                action_flags |= PC_INCREMENT;
+                break;
+            case NUM_TIME_SLEEP:
+                action_flags |= PC_INCREMENT | SAVE_CONTEXT | CONTEXT_SWITCH;
+                break;
+            case NUM_GETC:
+                register_state.a0 = getc_buffer[first_element];
+                first_element = (first_element + 1) % 64;
+                
+                action_flags |= PC_INCREMENT;
 
+                if (buffer_size != 0) {
+                    // dozvoljavamo spoljasnje hardverske prekide (i softverske prekide)
+                    __asm__ volatile("csrw sie, %0" :: "r"(0b1000000010));
+                }
+                
+                break;
+            case NUM_PUTC:
+                putc_buffer[buffer_size] = (char)register_state.a1;
+
+                if (++buffer_size == 1) {
+                    // isto kao za spoljasnji hardverski prekid
+                    while (!(*(char*)CONSOLE_STATUS & CONSOLE_TX_STATUS_BIT));
+                    *(char*)CONSOLE_TX_DATA = putc_buffer[0];
+
+                    buffer_size = 0;
+                }
+
+                action_flags |= PC_INCREMENT;
+                break;
+        }
     }
     
     // ecall iz sistemskog rezima
@@ -60,18 +134,19 @@ extern "C" void interrupt_handler() {
                 while (!(*(char*)CONSOLE_STATUS & CONSOLE_TX_STATUS_BIT));
                 *(char*)CONSOLE_TX_DATA = putc_buffer[i];
 
-                /* 
-                U statusnom registru bit na poziciji 0 označava da se iz kontrolera konzole može pročitati podatak koji je stigao od konzole (CONSOLE_RX_STATUS_BIT).
-                Vrtimo petlju sve dok je CONSOLE_RX_STATUS_BIT postavljen na 1 (zbog: U okviru jednog prekida mogu se prebacivati podaci sve dok su odgovarajući statusni biti na jedinici).
-                */
-                while (*(char*)CONSOLE_STATUS & CONSOLE_RX_STATUS_BIT) {
-                    getc_buffer[free_element] = *(char*)CONSOLE_RX_DATA;
-                    free_element = (free_element + 1) % 64;
-                    /* TODO
-                    ovde ide semafor da signalizira da ceka karakter:
-                    sem_manager.sem_signal(wait_for_char);
-                    */
-                }
+            }
+
+            buffer_size = 0;
+
+            /* 
+            U statusnom registru bit na poziciji 0 označava da se iz kontrolera konzole može pročitati podatak koji je stigao od konzole (CONSOLE_RX_STATUS_BIT).
+            Vrtimo petlju sve dok je CONSOLE_RX_STATUS_BIT postavljen na 1 (zbog: U okviru jednog prekida mogu se prebacivati podaci sve dok su odgovarajući statusni biti na jedinici).
+            */
+            while (*(char*)CONSOLE_STATUS & CONSOLE_RX_STATUS_BIT) {
+                getc_buffer[first_free_element] = *(char*)CONSOLE_RX_DATA;
+                first_free_element = (first_free_element + 1) % 64;
+                // TODO ovde ide semafor da signalizira da ceka karakter:
+                // sem_manager.sem_signal(wait_for_char);
             }
         }
 
@@ -81,6 +156,16 @@ extern "C" void interrupt_handler() {
         // Gasimo spoljasnje hardverske prekide
         __asm__ volatile("csrw sie, %0" :: "r"(0b10));
 
+    }
+
+    if (action_flags & PC_INCREMENT) {
+        register_state.pc += 4;
+    }
+    if (action_flags & SAVE_CONTEXT) {
+        // TODO scheduler.active->context = register_state;
+    }
+    if (action_flags & CONTEXT_SWITCH) {
+        // TODO context switch
     }
 
     // softverski prekid
