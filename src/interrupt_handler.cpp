@@ -1,4 +1,4 @@
-#include "../h/interrupt_handler.h"
+#include "../h/scheduler.h"
 #include "../h/memory_allocator.h"
 #include "../h/syscalls.h"
 #include "../lib/hw.h"

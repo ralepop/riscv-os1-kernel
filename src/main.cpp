@@ -1,7 +1,7 @@
 #include "../lib/console.h"
 #include "../lib/hw.h"
 #include "../h/memory_allocator.h"
-#include "../h/interrupt_handler.h"
+#include "../h/scheduler.h"
 
 MemoryAllocator mem;
 extern "C" void interrupt_routine();

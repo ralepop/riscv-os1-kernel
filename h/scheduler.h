@@ -1,9 +1,8 @@
-#ifndef INTERRUPT_HANDLER_H
-#define INTERRUPT_HANDLER_H
+#ifndef SCHEDULER_H
+#define SCHEDULER_H
 
 #include "../lib/hw.h"
 
-// Zaustavljanje emulatora RISC-V procesora iz programskog koda
 #define EXIT *(uint32*)0x100000 = 0x5555;
 
 struct registers {
@@ -21,5 +20,9 @@ struct registers {
 extern char putc_buffer[64];
 extern char getc_buffer[64];
 extern int buffer_size;
+
+struct thread_struc {
+
+};
 
 #endif
