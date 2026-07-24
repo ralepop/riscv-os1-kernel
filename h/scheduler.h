@@ -17,7 +17,7 @@ struct registers {
 };
 
 // konzola
-extern char putc_buffer[64];
+extern char putc_buffer[64];`
 extern char getc_buffer[64];
 extern int buffer_size;
 
@@ -28,9 +28,33 @@ struct _thread {
 
 typedef struct _thread *thread_t;
 
-struct thread_node {
+struct thread_ready_node {
     thread_t thread;
-    thread_node *next;
+    thread_ready_node *next;
+};
+
+void thread_wrapper();
+
+struct thread_sleeping_node {
+    time_t period;
+    thread_t thread;
+    thread_sleeping_node *next;
+};
+
+// round-robin algoritam
+class Scheduler {
+public:
+    Scheduler();
+
+    thread_t curr_active_thread;
+    long int quantum_time_left;
+    thread_ready_node *ready_node;
+    thread_sleeping_node *sleeping_node;
+
+    int thread_create(thread_t *handle, void(*start_routine)(void*), void *arg, void *stack);
+    // TODO doraditi
+    int thread_exit();
+    int time_sleep(time_t period);
 };
 
 #endif
