@@ -21,8 +21,16 @@ extern char putc_buffer[64];
 extern char getc_buffer[64];
 extern int buffer_size;
 
-struct thread_struc {
+struct _thread {
+    registers context;
+    void *stack_head;
+};
 
+typedef struct _thread *thread_t;
+
+struct thread_node {
+    thread_t thread;
+    thread_node *next;
 };
 
 #endif
