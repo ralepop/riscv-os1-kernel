@@ -17,4 +17,6 @@ public:
     Fragment *head;
 };
 
+extern MemoryAllocator mem;
+
 #endif
