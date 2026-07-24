@@ -174,7 +174,7 @@ extern "C" void interrupt_handler() {
         // TODO context switch
     }
 
-    // softverski prekid
+    // TODO softverski prekid
     if (scause == SUPERVISOR_SOFTWARE_INTERRUPT) {
 
     }
