@@ -12,7 +12,7 @@ struct Fragment {
 class MemoryAllocator {
 public:
     MemoryAllocator();
-    void* mem_alloc(size_t size);
+    void *mem_alloc(size_t size);
     int mem_free(void *ptr);
     Fragment *head;
 };

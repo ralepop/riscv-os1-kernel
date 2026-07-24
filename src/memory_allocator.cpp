@@ -28,7 +28,7 @@ MemoryAllocator::MemoryAllocator() {
     head->prev = nullptr;
 }
 
-void* MemoryAllocator::mem_alloc(size_t size) {
+void *MemoryAllocator::mem_alloc(size_t size) {
     
     // Moramo da uvecamo jer cuvamo next, prev i num_blocks.
     size += sizeof(Fragment);
