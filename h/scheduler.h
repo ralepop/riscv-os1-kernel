@@ -17,7 +17,7 @@ struct registers {
 };
 
 // konzola
-extern char putc_buffer[64];`
+extern char putc_buffer[64];
 extern char getc_buffer[64];
 extern int buffer_size;
 
