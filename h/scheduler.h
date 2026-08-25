@@ -24,6 +24,8 @@ extern int buffer_size;
 struct _thread {
     registers context;
     void *stack_head;
+    void (*start_routine)(void*);
+    void *arg;
 };
 
 typedef struct _thread *thread_t;
@@ -33,7 +35,7 @@ struct thread_ready_node {
     thread_ready_node *next;
 };
 
-void thread_wrapper();
+void thread_wrapper(thread_t self);
 
 struct thread_sleeping_node {
     time_t period;
@@ -47,14 +49,22 @@ public:
     Scheduler();
 
     thread_t curr_active_thread;
+    thread_t idle_thread;
     long int quantum_time_left;
-    thread_ready_node *ready_node;
+
+    thread_ready_node *ready_head;
+    thread_ready_node *ready_tail;
     thread_sleeping_node *sleeping_node;
 
+    thread_t make_thread(void(*start_routine)(void*), void *arg, void *stack_space);
     int thread_create(thread_t *handle, void(*start_routine)(void*), void *arg, void *stack);
-    // TODO doraditi
-    int thread_exit();
-    int time_sleep(time_t period);
+    void put_ready(thread_t t);
+    thread_t pick_next();
+
+    // int thread_exit();
+    // int time_sleep(time_t period);
 };
+
+extern Scheduler scheduler;
 
 #endif

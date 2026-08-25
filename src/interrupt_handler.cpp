@@ -19,8 +19,10 @@ static int first_free_element = 0;
 static int first_element = 0;
 
 enum Flags : uint8 {
-    PC_INCREMENT   = 1 << 0, // 0b0001
-    CONTEXT_SWITCH = 1 << 1, // 0b0010
+    PC_INCREMENT    = 1 << 0,   // 0b0001
+    CONTEXT_SWITCH  = 1 << 1,   // 0b0010
+    SAVE_CONTEXT    = 1 << 2,   // cuvaj register_state u curr_active_thread->context
+    REQUEUE_CURRENT = 1 << 3,   // vrati tekucu nit u ready red (round-robin)    
 };
 
 
@@ -51,16 +53,20 @@ extern "C" void interrupt_handler() {
                 action_flags |= PC_INCREMENT;
                 break;
             case NUM_THREAD_CREATE:
-                // TODO thread_create
+                register_state.a0 = scheduler.thread_create(
+                    (thread_t*)register_state.a1,
+                    (void(*)(void*))register_state.a2,
+                    (void*)register_state.a3,
+                    (void*)register_state.a4
+                );
                 action_flags |= PC_INCREMENT;
                 break;
             case NUM_THREAD_EXIT:
-                // TODO thread_exit
+                // ne cuvamo context niti koja se gasi
                 action_flags |= CONTEXT_SWITCH;
                 break;
             case NUM_THREAD_DISPATCH:
-                // TODO thread_dispatch
-                action_flags |= PC_INCREMENT | CONTEXT_SWITCH;
+                action_flags |= PC_INCREMENT | CONTEXT_SWITCH | SAVE_CONTEXT | REQUEUE_CURRENT;
                 break;
             case NUM_SEM_OPEN:
                 // TODO sem_open
@@ -168,15 +174,30 @@ extern "C" void interrupt_handler() {
 
     if (action_flags & PC_INCREMENT) {
         register_state.pc += 4;
-        // TODO scheduler.active->context = register_state;
     }
+
     if (action_flags & CONTEXT_SWITCH) {
-        // TODO context switch
+        if (action_flags & SAVE_CONTEXT) {
+            scheduler.curr_active_thread->context = register_state;
+
+            if (action_flags & REQUEUE_CURRENT) {
+                scheduler.put_ready(scheduler.curr_active_thread);
+            }
+        } else {
+            // nit se gasi, oslobadjamo resurse
+            mem.mem_free(scheduler.curr_active_thread->stack_head);
+            mem.mem_free((void*)scheduler.curr_active_thread);
+        }
+
+        scheduler.curr_active_thread = scheduler.pick_next();
+        register_state = scheduler.curr_active_thread->context;
+        scheduler.quantum_time_left = DEFAULT_TIME_SLICE;
     }
 
-    // TODO softverski prekid
     if (scause == SUPERVISOR_SOFTWARE_INTERRUPT) {
-
+        if (--scheduler.quantum_time_left <= 0) {
+            action_flags |= CONTEXT_SWITCH | SAVE_CONTEXT | REQUEUE_CURRENT;
+        }
     }
 
     __asm__ volatile("csrw sip, zero");
