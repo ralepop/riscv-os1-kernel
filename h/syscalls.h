@@ -1,24 +1,26 @@
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
-#define NUM_MEM_ALLOC           0x01
-#define NUM_MEM_FREE            0x02
+#define NUM_MEM_ALLOC                   0x01
+#define NUM_MEM_FREE                    0x02
+#define NUM_MEM_GET_FREE_SPACE          0x03
+#define NUM_MEM_GET_LARGEST_FREE_BLOCK  0x04
 
-#define NUM_THREAD_CREATE       0x11
-#define NUM_THREAD_EXIT         0x12
-#define NUM_THREAD_DISPATCH     0x13
+#define NUM_THREAD_CREATE               0x11
+#define NUM_THREAD_EXIT                 0x12
+#define NUM_THREAD_DISPATCH             0x13
 
-#define NUM_SEM_OPEN            0x21
-#define NUM_SEM_CLOSE           0x22
-#define NUM_SEM_WAIT            0x23
-#define NUM_SEM_SIGNAL          0x24
-#define NUM_SEM_WAIT_N          0x25
-#define NUM_SIGNAL_N            0x26
+#define NUM_SEM_OPEN                    0x21
+#define NUM_SEM_CLOSE                   0x22
+#define NUM_SEM_WAIT                    0x23
+#define NUM_SEM_SIGNAL                  0x24
+#define NUM_SEM_WAIT_N                  0x25
+#define NUM_SEM_SIGNAL_N                0x26
 
-#define NUM_TIME_SLEEP          0x31
+#define NUM_TIME_SLEEP                  0x31
 
-#define NUM_GETC                0x41
-#define NUM_PUTC                0x42
+#define NUM_GETC                        0x41
+#define NUM_PUTC                        0x42
 
 // https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#scause
 

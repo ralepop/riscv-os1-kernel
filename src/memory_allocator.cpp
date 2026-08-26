@@ -173,3 +173,37 @@ int MemoryAllocator::mem_free(void *ptr) {
 
     return 0;
 }
+
+size_t MemoryAllocator::mem_get_free_space() {
+    if (head == nullptr) {
+        return 0;
+    }
+
+    size_t result = 0;
+    Fragment* curr = head;
+
+    while (curr != nullptr) {
+        result += curr->number_of_blocks;
+        curr = curr->next;
+    }
+
+    return result * MEM_BLOCK_SIZE;
+}
+
+size_t MemoryAllocator::mem_get_largest_free_block() {
+    if (head == nullptr) {
+        return 0;
+    }
+
+    size_t largest_block = 0;
+    Fragment* curr = head;
+    
+    while (curr != nullptr) {
+        if (curr->number_of_blocks > largest_block) {
+            largest_block = curr->number_of_blocks;
+        }
+        curr = curr->next;
+    }
+
+    return largest_block * MEM_BLOCK_SIZE;
+}

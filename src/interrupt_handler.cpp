@@ -52,6 +52,14 @@ extern "C" void interrupt_handler() {
                 register_state.a0 = mem.mem_free((void*)register_state.a1);
                 action_flags |= PC_INCREMENT;
                 break;
+            case NUM_MEM_GET_FREE_SPACE:
+                register_state.a0 = mem.mem_get_free_space();
+                action_flags |= PC_INCREMENT;
+                break;
+            case NUM_MEM_GET_LARGEST_FREE_BLOCK:
+                register_state.a0 = mem.mem_get_largest_free_block();
+                action_flags |= PC_INCREMENT;
+                break;
             case NUM_THREAD_CREATE:
                 register_state.a0 = scheduler.thread_create(
                     (thread_t*)register_state.a1,

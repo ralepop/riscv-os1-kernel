@@ -12,8 +12,12 @@ struct Fragment {
 class MemoryAllocator {
 public:
     MemoryAllocator();
+
     void *mem_alloc(size_t size);
     int mem_free(void *ptr);
+    size_t mem_get_free_space();
+    size_t mem_get_largest_free_block();
+
     Fragment *head;
 };
 
