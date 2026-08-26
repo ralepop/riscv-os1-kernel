@@ -15,13 +15,13 @@ public:
     int start();
     static void dispatch();
     static int sleep(time_t);
-    friend void run_wrapper(void *arg);
 protected:
     Thread();
     virtual void run() {}
 private:
     thread_t myHandle;
     void(*body)(void*); void* arg;
+    static void wrapper(void* arg);
 };
 
 class Semaphore {
@@ -41,6 +41,7 @@ protected:
     PeriodicThread(time_t period);
     virtual void periodicActivation() {}
 private:
+    void run() override;
     time_t period;
 };
 
