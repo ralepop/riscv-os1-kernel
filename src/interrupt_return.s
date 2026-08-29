@@ -1,10 +1,3 @@
-# 1 "src/interrupt_return.S"
-# 1 "<built-in>"
-# 1 "<command-line>"
-# 31 "<command-line>"
-# 1 "/usr/riscv64-linux-gnu/include/stdc-predef.h" 1 3
-# 32 "<command-line>" 2
-# 1 "src/interrupt_return.S"
 .globl interrupt_return
 .globl interrupt_routine
 .globl register_state
@@ -13,10 +6,10 @@
 interrupt_return:
     la ra, kernel_stack;
     sd sp, (ra);
-    la ra, register_state;
-
-    ld a0, 248(ra);
-    csrw sepc, a0;
+    la ra, register_state; // prebacujemo ra na pocetak nase strukture
+    
+    ld a0, 248(ra); // uzimamo sepc i stavljamo u a0
+    csrw sepc, a0; // u sepc upisujemo a0 (zapravo sepc)
 
     ld sp, 8(ra);
     ld s0, 16(ra);
@@ -49,4 +42,4 @@ interrupt_return:
     ld gp, 232(ra);
     ld tp, 240(ra);
     ld ra, (ra);
-    sret;
+    sret;    

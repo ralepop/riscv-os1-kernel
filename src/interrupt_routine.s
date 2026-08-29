@@ -1,10 +1,3 @@
-# 1 "src/interrupt_routine.S"
-# 1 "<built-in>"
-# 1 "<command-line>"
-# 31 "<command-line>"
-# 1 "/usr/riscv64-linux-gnu/include/stdc-predef.h" 1 3
-# 32 "<command-line>" 2
-# 1 "src/interrupt_routine.S"
 .globl interrupt_routine
 .globl register_state
 .globl kernel_stack
@@ -42,12 +35,13 @@ interrupt_routine:
     sd t6, 224(ra);
     sd gp, 232(ra);
     sd tp, 240(ra);
-    mv a0, ra;
-    csrrw ra, sscratch, ra;
-    sd ra, (a0);
+    mv a0, ra; // a0 pokazuje na pocetak nase strukture
+    csrrw ra, sscratch, ra; // sada je ra = ra (original), sscratch = ra (struktura, nije bitno)
+    sd ra, (a0); // upisujemo ra (original) na pocetak nase strukture (na sta pokazuje a0)
     csrr t0, sepc;
-    sd t0, 248(a0);
+    sd t0, 248(a0); // upisujemo sepc na a0 + 248
     la ra, kernel_stack;
     ld sp, (ra);
     call interrupt_handler;
     call interrupt_return;
+    
