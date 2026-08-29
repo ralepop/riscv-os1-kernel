@@ -34,6 +34,25 @@ extern "C" void interrupt_handler() {
     __asm__ volatile ("csrr %0, scause" : "=r" (scause));
     
     if (scause == ILLEGAL_INSTRUCTION || scause == LOAD_ACCESS_FAULT || scause == STORE_AMO_ACCESS_FAULT) {
+        auto raw_putc = [](char c) {
+            while (!(*(char*)CONSOLE_STATUS & CONSOLE_TX_STATUS_BIT));
+            *(char*)CONSOLE_TX_DATA = c;
+        };
+        auto raw_hex = [&](uint64 v) {
+            for (int shift = 60; shift >= 0; shift -= 4) {
+                int nibble = (v >> shift) & 0xF;
+                raw_putc(nibble < 10 ? ('0' + nibble) : ('a' + nibble - 10));
+            }
+        };
+
+        const char* msg = "\n*** FAULT scause=";
+        for (const char* p = msg; *p; p++) raw_putc(*p);
+        raw_hex(scause);
+        const char* msg2 = " pc=";
+        for (const char* p = msg2; *p; p++) raw_putc(*p);
+        raw_hex(register_state.pc);
+        raw_putc('\n');
+
         EXIT
     }
     

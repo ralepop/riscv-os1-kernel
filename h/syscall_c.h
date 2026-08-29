@@ -3,6 +3,10 @@
 
 #include "../lib/hw.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void* mem_alloc(size_t size);           // 0x01
 int mem_free (void*);                   // 0x02
 size_t mem_get_free_space();            // 0x03
@@ -39,8 +43,12 @@ int sem_signal_n(sem_t id, unsigned n); // 0x26
 typedef unsigned long time_t;
 int time_sleep(time_t);                 // 0x31
 
-const int EOF = -1;
+extern const int EOF;
 char getc();                            // 0x41
 void putc(char);                        // 0x42
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

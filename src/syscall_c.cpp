@@ -2,6 +2,7 @@
 #include "../h/syscalls.h"
 
 extern sem_t wait_for_char;
+const int EOF = -1;
 
 void* mem_alloc(size_t size) {
 

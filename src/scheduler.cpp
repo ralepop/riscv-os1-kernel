@@ -23,12 +23,14 @@ thread_t Scheduler::make_thread(void(*start_routine)(void*), void *arg, void *st
         ((uint64*)&t->context)[i] = 0;
     }
 
-    t->stack_head  = (void*)((uint64)stack_space - DEFAULT_STACK_SIZE + 1);
+    void* stack_top = (void*)((uint64)stack_space + DEFAULT_STACK_SIZE);
+
+    t->stack_head  = stack_space;
     t->start_routine = start_routine;
     t->arg = arg;
 
     // ~0xFULL -> ...11110000, unsigned long long
-    t->context.sp = (uint64)stack_space & ~0xFULL; // sp mora biti deljiv sa 16
+    t->context.sp = (uint64)stack_top & ~0xFULL; // sp mora biti deljiv sa 16
 
     // nit ne moze da sama pozove start_routine, mora da nakon sto se funkcija zavrsi, da izvrsi
     // poziv thread_exit. thread_wrapper automatski radi thread_exit.
@@ -42,7 +44,7 @@ thread_t Scheduler::make_thread(void(*start_routine)(void*), void *arg, void *st
     // gp i tp su isti za ceo program, zato samo kopiramo njihovu vrednost u kontekst nove niti.
     // citamo trenutnu vrednost registra gp i cuvamo je u t->context.gp (isto i za tp registar).
     __asm__ volatile("mv %0, gp" : "=r"(t->context.gp));
-    __asm__ volatile("mv %0, tp" : "=r"(t->context.gp));
+    __asm__ volatile("mv %0, tp" : "=r"(t->context.tp));
 
     return t;
 }
@@ -53,7 +55,9 @@ int Scheduler::thread_create(thread_t *handle, void(*start_routine)(void*), void
     if (t == nullptr) return -1;
 
     put_ready(t);
-    *handle = t;
+    if (handle != nullptr) {
+        *handle = t;
+    }
     return 0;
 }
 
