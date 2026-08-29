@@ -9,17 +9,17 @@ extern "C" {
 #include "../h/syscall_cpp.hpp"
 
 // user_main_body ima odgovarajuci potpis - void(*)(void*)
-void user_main_body(void*) { userMain(); }
+// void user_main_body(void*) { userMain(); }
 
 // besposlena nit
-void idle_body(void*) { while (true) {} }
+// void idle_body(void*) { while (true) {} }
 
 extern MemoryAllocator mem;
-MemoryAllocator mem;
+// MemoryAllocator mem;
 extern Scheduler scheduler;
-Scheduler scheduler;
+// Scheduler scheduler;
 extern sem_t wait_for_char;
-sem_t wait_for_char;
+// sem_t wait_for_char;
 
 extern "C" void interrupt_routine();
 extern "C" void interrupt_return();

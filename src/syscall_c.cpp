@@ -1,6 +1,5 @@
 #include "../h/syscall_c.h"
 #include "../h/syscalls.h"
-#include <cstddef>
 
 extern sem_t wait_for_char;
 

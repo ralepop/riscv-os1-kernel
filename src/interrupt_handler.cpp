@@ -6,7 +6,8 @@
 extern MemoryAllocator mem;
 extern "C" void interrupt_return();
 
-extern "C" struct registers register_state = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+extern "C" struct registers register_state;
+struct registers register_state = {0};
 
 extern "C" uint64 kernel_stack;
 uint64 kernel_stack;

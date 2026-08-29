@@ -1,8 +1,6 @@
 #include "../h/syscalls.h"
 #include "../h/scheduler.h"
 #include "../h/memory_allocator.h"
-#include <condition_variable>
-#include <cstddef>
 
 extern MemoryAllocator mem;
 Scheduler scheduler;
@@ -100,7 +98,7 @@ void thread_wrapper(thread_t self) {
     a0 = 0x12
     */
     register long a0 __asm__("a0") = NUM_THREAD_EXIT;
-    __asm__ volatile("ecall");
+    __asm__ volatile("ecall" : : "r" (a0));
 
     // nedostizno, ali ukoliko thread_exit ne pokrene context switch, procesor se vrti u petlji
     while (true) {}
