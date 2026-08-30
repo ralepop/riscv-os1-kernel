@@ -29,7 +29,6 @@ enum Flags : uint8 {
 
 
 extern "C" void interrupt_handler() {
-    
     uint64 scause;
     __asm__ volatile ("csrr %0, scause" : "=r" (scause));
     
@@ -62,7 +61,7 @@ extern "C" void interrupt_handler() {
     uint8 action_flags = 0;
 
     // ecall iz korisnickog rezima
-    if (scause == ENVIRONMENT_CALL_FROM_U_MODE) {
+    if (scause == ENVIRONMENT_CALL_FROM_U_MODE || scause == ENVIRONMENT_CALL_FROM_S_MODE) {
         switch (syscall_code) {
             case NUM_MEM_ALLOC:
                 register_state.a0 = (uint64)mem.mem_alloc(register_state.a1);
@@ -144,18 +143,18 @@ extern "C" void interrupt_handler() {
     }
     
     // ecall iz sistemskog rezima
-    if (scause == ENVIRONMENT_CALL_FROM_S_MODE) {
-        switch (syscall_code) {
-            case NUM_MEM_ALLOC:
-                register_state.a0 = (uint64)mem.mem_alloc(register_state.a1);
-                action_flags |= PC_INCREMENT;
-                break;
-            case NUM_MEM_FREE:
-                register_state.a0 = mem.mem_free((void*)register_state.a1);
-                action_flags |= PC_INCREMENT;
-                break;
-        }
-    }
+    // if (scause == ENVIRONMENT_CALL_FROM_S_MODE) {
+    //     switch (syscall_code) {
+    //         case NUM_MEM_ALLOC:
+    //             register_state.a0 = (uint64)mem.mem_alloc(register_state.a1);
+    //             action_flags |= PC_INCREMENT;
+    //             break;
+    //         case NUM_MEM_FREE:
+    //             register_state.a0 = mem.mem_free((void*)register_state.a1);
+    //             action_flags |= PC_INCREMENT;
+    //             break;
+    //     }
+    // }
     
     // spoljasnji hardverski prekid
     /* 
@@ -200,6 +199,12 @@ extern "C" void interrupt_handler() {
 
     }
 
+    if (scause == SUPERVISOR_SOFTWARE_INTERRUPT) {
+        if (--scheduler.quantum_time_left <= 0) {
+            action_flags |= CONTEXT_SWITCH | SAVE_CONTEXT | REQUEUE_CURRENT;
+        }
+    }
+
     if (action_flags & PC_INCREMENT) {
         register_state.pc += 4;
     }
@@ -222,11 +227,7 @@ extern "C" void interrupt_handler() {
         scheduler.quantum_time_left = DEFAULT_TIME_SLICE;
     }
 
-    if (scause == SUPERVISOR_SOFTWARE_INTERRUPT) {
-        if (--scheduler.quantum_time_left <= 0) {
-            action_flags |= CONTEXT_SWITCH | SAVE_CONTEXT | REQUEUE_CURRENT;
-        }
-    }
+
 
     __asm__ volatile("csrw sip, zero");
 

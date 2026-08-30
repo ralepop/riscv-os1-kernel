@@ -7,7 +7,7 @@ extern "C" {
     #include "../h/syscall_c.h"
 }
 
-#include "../test/Threads_CPP_API_test.hpp"
+#include "../test/System_Mode_test.hpp"
 
 extern MemoryAllocator mem;
 MemoryAllocator mem;
@@ -23,18 +23,32 @@ extern "C" struct registers register_state;
 
 void userMain();
 
+void idle_wrapper(void* arg) {
+    while (true) {
+        thread_dispatch();
+    }
+}
+
+void cpp_test_wrapper(void* arg) {
+    void (*test_func)() = (void (*)())arg;
+    test_func();
+    EXIT
+}
+
 void main() {
 
     // kada se desi prekid izvrsavamo kod cija se adresa nalazi u funkciji interrupt_routine
     __asm__ volatile("csrw stvec, %0" :: "r"(interrupt_routine));
     mem = MemoryAllocator();
     scheduler = Scheduler();
+
+    scheduler.idle_thread = scheduler.make_thread(idle_wrapper, nullptr, mem.mem_alloc(DEFAULT_STACK_SIZE));
     
     // gasimo spoljasnje hardverske prekide
     __asm__ volatile("csrw sie, %0" :: "r"((uint64)0b10));
 
 
-    scheduler.thread_create(nullptr, (void(*)(void*))(&Threads_CPP_API_test), nullptr, mem.mem_alloc(DEFAULT_STACK_SIZE));
+    scheduler.thread_create(nullptr, cpp_test_wrapper, (void*)&System_Mode_test, mem.mem_alloc(DEFAULT_STACK_SIZE));
 
     scheduler.curr_active_thread = scheduler.pick_next();
     register_state = scheduler.curr_active_thread->context;

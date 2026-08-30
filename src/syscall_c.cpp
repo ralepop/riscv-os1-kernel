@@ -5,12 +5,8 @@ extern sem_t wait_for_char;
 const int EOF = -1;
 
 void* mem_alloc(size_t size) {
-
-    size_t blocks = size / MEM_BLOCK_SIZE;
-    if (size % MEM_BLOCK_SIZE != 0) blocks++;
-
     register long a0 __asm__("a0") = NUM_MEM_ALLOC;
-    register long a1 __asm__("a1") = (long)blocks;
+    register long a1 __asm__("a1") = (long)size;
     __asm__ volatile("ecall" : "+r"(a0) : "r"(a1));
     return (void*)a0;
 }

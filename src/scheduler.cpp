@@ -1,6 +1,7 @@
 #include "../h/syscalls.h"
 #include "../h/scheduler.h"
 #include "../h/memory_allocator.h"
+#include "../h/syscall_c.h"
 
 extern MemoryAllocator mem;
 Scheduler scheduler;
@@ -92,6 +93,8 @@ thread_t Scheduler::pick_next() {
 void thread_wrapper(thread_t self) {
     self->start_routine(self->arg);
 
+    thread_exit();
+
     /* 
     explicit register variable
     https://gcc.gnu.org/onlinedocs/gcc/Explicit-Register-Variables.html
@@ -101,9 +104,9 @@ void thread_wrapper(thread_t self) {
     scause = ENVIRONMENT_CALL_FROM_U_MODE
     a0 = 0x12
     */
-    register long a0 __asm__("a0") = NUM_THREAD_EXIT;
-    __asm__ volatile("ecall" : : "r" (a0));
+    // register long a0 __asm__("a0") = NUM_THREAD_EXIT;
+    // __asm__ volatile("ecall" : : "r" (a0));
 
     // nedostizno, ali ukoliko thread_exit ne pokrene context switch, procesor se vrti u petlji
-    while (true) {}
+    // while (true) {}
 }
