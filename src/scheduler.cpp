@@ -110,3 +110,39 @@ void thread_wrapper(thread_t self) {
     // nedostizno, ali ukoliko thread_exit ne pokrene context switch, procesor se vrti u petlji
     // while (true) {}
 }
+
+void Scheduler::put_sleep(thread_t t, time_t time) {
+    thread_sleeping_node* node = (thread_sleeping_node*)mem.mem_alloc(sizeof(thread_sleeping_node));
+
+    node->thread = t;
+    node->period = time;
+    node->next = sleeping_node;
+    sleeping_node = node;
+}
+
+void Scheduler::tick_sleep() {
+    thread_sleeping_node* prev = nullptr;
+    thread_sleeping_node* curr = sleeping_node;
+
+    while (curr != nullptr) {
+        curr->period--;
+
+        if (curr->period == 0) {
+            put_ready(curr->thread);
+            thread_sleeping_node* to_delete = curr;
+
+            if (prev == nullptr) {
+                sleeping_node = curr->next;
+            } else {
+                prev->next = curr->next;
+            }
+
+            curr = curr->next;
+            mem.mem_free(to_delete);
+        } else {
+            prev = curr;
+            curr = curr->next;
+        }
+    }
+
+}

@@ -139,7 +139,8 @@ extern "C" void interrupt_handler() {
                 action_flags |= PC_INCREMENT;
                 break;
             case NUM_TIME_SLEEP:
-                action_flags |= PC_INCREMENT | CONTEXT_SWITCH;
+                scheduler.put_sleep(scheduler.curr_active_thread, (time_t)register_state.a1);
+                action_flags |= PC_INCREMENT | CONTEXT_SWITCH | SAVE_CONTEXT;
                 break;
             case NUM_GETC:
                 register_state.a0 = getc_buffer[first_element];
@@ -226,6 +227,7 @@ extern "C" void interrupt_handler() {
     }
 
     if (scause == SUPERVISOR_SOFTWARE_INTERRUPT) {
+        scheduler.tick_sleep();
         if (--scheduler.quantum_time_left <= 0) {
             action_flags |= CONTEXT_SWITCH | SAVE_CONTEXT | REQUEUE_CURRENT;
         }

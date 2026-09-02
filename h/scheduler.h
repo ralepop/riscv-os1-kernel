@@ -61,8 +61,8 @@ public:
     void put_ready(thread_t t);
     thread_t pick_next();
 
-    // int thread_exit();
-    // int time_sleep(time_t period);
+    void put_sleep(thread_t t, time_t time);
+    void tick_sleep();
 };
 
 extern Scheduler scheduler;
