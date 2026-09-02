@@ -2,12 +2,11 @@
 #include "../lib/hw.h"
 #include "../h/memory_allocator.h"
 #include "../h/scheduler.h"
+#include "../h/semaphore.h"
 
 extern "C" {
     #include "../h/syscall_c.h"
 }
-
-#include "../test/System_Mode_test.hpp"
 
 extern MemoryAllocator mem;
 MemoryAllocator mem;
@@ -41,6 +40,9 @@ void main() {
     __asm__ volatile("csrw stvec, %0" :: "r"(interrupt_routine));
     mem = MemoryAllocator();
     scheduler = Scheduler();
+    sem_manager = Semaphore();
+
+    sem_manager.sem_open(&wait_for_char, 0);
 
     scheduler.idle_thread = scheduler.make_thread(idle_wrapper, nullptr, mem.mem_alloc(DEFAULT_STACK_SIZE));
     
@@ -48,7 +50,7 @@ void main() {
     __asm__ volatile("csrw sie, %0" :: "r"((uint64)0b10));
 
 
-    scheduler.thread_create(nullptr, cpp_test_wrapper, (void*)&System_Mode_test, mem.mem_alloc(DEFAULT_STACK_SIZE));
+    scheduler.thread_create(nullptr, cpp_test_wrapper, (void*)&userMain, mem.mem_alloc(DEFAULT_STACK_SIZE));
 
     scheduler.curr_active_thread = scheduler.pick_next();
     register_state = scheduler.curr_active_thread->context;

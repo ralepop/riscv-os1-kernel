@@ -1,5 +1,6 @@
 #include "../h/scheduler.h"
 #include "../h/memory_allocator.h"
+#include "../h/semaphore.h"
 #include "../h/syscalls.h"
 #include "../lib/hw.h"
 
@@ -18,6 +19,7 @@ char putc_buffer[64];
 int buffer_size = 0;
 static int first_free_element = 0;
 static int first_element = 0;
+extern sem_t wait_for_char;
 
 enum Flags : uint8 {
     PC_INCREMENT    = 1 << 0,   // 0b0001
@@ -96,19 +98,44 @@ extern "C" void interrupt_handler() {
                 action_flags |= PC_INCREMENT | CONTEXT_SWITCH | SAVE_CONTEXT | REQUEUE_CURRENT;
                 break;
             case NUM_SEM_OPEN:
-                // TODO sem_open
+                register_state.a0 = sem_manager.sem_open((sem_t*)register_state.a1, (unsigned)register_state.a2);
                 action_flags |= PC_INCREMENT;
                 break;
             case NUM_SEM_CLOSE:
-                // TODO sem_close
+                register_state.a0 = sem_manager.sem_close((sem_t)register_state.a1);
                 action_flags |= PC_INCREMENT;
                 break;
-            case NUM_SEM_WAIT:
-                // TODO sem_wait
-                action_flags |= PC_INCREMENT | CONTEXT_SWITCH;
+            case NUM_SEM_WAIT: {
+                int result = sem_manager.sem_wait((sem_t)register_state.a1);
+                action_flags |= PC_INCREMENT;
+
+                if (result == 1) {
+                    action_flags |= CONTEXT_SWITCH | SAVE_CONTEXT; // blokirana
+                } else {
+                    register_state.a0 = result;
+                }
+
                 break;
+            }
             case NUM_SEM_SIGNAL:
-                // TODO sem_signal
+                register_state.a0 = sem_manager.sem_signal((sem_t)register_state.a1);
+                action_flags |= PC_INCREMENT;
+                break;
+
+            case NUM_SEM_WAIT_N: {
+                int result = sem_manager.sem_wait_n((sem_t)register_state.a1, (unsigned)register_state.a2);
+                action_flags |= PC_INCREMENT;
+                
+                if (result == 1) {
+                    action_flags |= CONTEXT_SWITCH | SAVE_CONTEXT;
+                } else {
+                    register_state.a0 = result;
+                }
+                
+                break;
+            }
+            case NUM_SEM_SIGNAL_N:
+                register_state.a0 = sem_manager.sem_signal_n((sem_t)register_state.a1, (unsigned)register_state.a2);
                 action_flags |= PC_INCREMENT;
                 break;
             case NUM_TIME_SLEEP:
@@ -186,8 +213,7 @@ extern "C" void interrupt_handler() {
             while (*(char*)CONSOLE_STATUS & CONSOLE_RX_STATUS_BIT) {
                 getc_buffer[first_free_element] = *(char*)CONSOLE_RX_DATA;
                 first_free_element = (first_free_element + 1) % 64;
-                // TODO ovde ide semafor da signalizira da ceka karakter:
-                // sem_manager.sem_signal(wait_for_char);
+                sem_manager.sem_signal(wait_for_char);
             }
         }
 
