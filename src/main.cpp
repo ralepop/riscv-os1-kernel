@@ -47,7 +47,7 @@ void main() {
     scheduler.idle_thread = scheduler.make_thread(idle_wrapper, nullptr, mem.mem_alloc(DEFAULT_STACK_SIZE));
     
     // gasimo spoljasnje hardverske prekide
-    __asm__ volatile("csrw sie, %0" :: "r"((uint64)0b10));
+    __asm__ volatile("csrw sie, %0" :: "r"((uint64)0b1000000010)); // SSIE | SEIE
 
 
     scheduler.thread_create(nullptr, cpp_test_wrapper, (void*)&userMain, mem.mem_alloc(DEFAULT_STACK_SIZE));
