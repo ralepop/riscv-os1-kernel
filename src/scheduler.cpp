@@ -121,8 +121,8 @@ void Scheduler::put_sleep(thread_t t, time_t time) {
 }
 
 void Scheduler::tick_sleep() {
-    thread_sleeping_node* prev = nullptr;
     thread_sleeping_node* curr = sleeping_node;
+    thread_sleeping_node* prev = nullptr;       // -> za brisanje
 
     while (curr != nullptr) {
         curr->period--;
@@ -144,5 +144,4 @@ void Scheduler::tick_sleep() {
             curr = curr->next;
         }
     }
-
 }

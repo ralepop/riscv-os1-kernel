@@ -23,16 +23,16 @@ extern int buffer_size;
 
 struct _thread {
     registers context;
-    void *stack_head;
+    void* stack_head;
     void (*start_routine)(void*);
-    void *arg;
+    void* arg;
 };
 
 typedef struct _thread *thread_t;
 
 struct thread_ready_node {
     thread_t thread;
-    thread_ready_node *next;
+    thread_ready_node* next;
 };
 
 void thread_wrapper(thread_t self);
@@ -40,7 +40,7 @@ void thread_wrapper(thread_t self);
 struct thread_sleeping_node {
     time_t period;
     thread_t thread;
-    thread_sleeping_node *next;
+    thread_sleeping_node* next;
 };
 
 // round-robin algoritam
@@ -52,12 +52,12 @@ public:
     thread_t idle_thread;
     long int quantum_time_left;
 
-    thread_ready_node *ready_head;
-    thread_ready_node *ready_tail;
-    thread_sleeping_node *sleeping_node;
+    thread_ready_node* ready_head;
+    thread_ready_node* ready_tail;
+    thread_sleeping_node* sleeping_node;
 
-    thread_t make_thread(void(*start_routine)(void*), void *arg, void *stack_space);
-    int thread_create(thread_t *handle, void(*start_routine)(void*), void *arg, void *stack);
+    thread_t make_thread(void(*start_routine)(void*), void* arg, void* stack_space);
+    int thread_create(thread_t* handle, void(*start_routine)(void*), void* arg, void* stack);
     void put_ready(thread_t t);
     thread_t pick_next();
 
